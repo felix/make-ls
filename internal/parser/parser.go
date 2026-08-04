@@ -322,6 +322,10 @@ func (p *parser) parseLine() {
 			depsColOffset += len(raw) - len(strings.TrimLeft(raw, " \t"))
 		}
 
+		var comments string
+		var hasComments bool
+		depsPart, comments, hasComments = strings.Cut(depsPart, "#")
+
 		// Parse deps, splitting on | for order-only.
 		deps, orderOnly := splitDepsOrderOnly(depsPart, startLine, depsColOffset)
 
@@ -334,6 +338,9 @@ func (p *parser) parseLine() {
 			DocComment:    p.buildDocComment(),
 			Range:         lineRange(startLine, 0, len(line)),
 			NameRange:     nameRangeInSegment(startLine, line, trimmed, namesPart),
+		}
+		if hasComments {
+			t.LineComment = strings.TrimSpace(strings.TrimLeft(comments, "#"))
 		}
 		p.targets = append(p.targets, t)
 		p.currentTarget = t

@@ -213,6 +213,49 @@ func TestParseOrderOnlyDeps(t *testing.T) {
 	assert.Equal(t, "builddir", tgt.OrderOnlyDeps[0].Name)
 }
 
+func TestParseTargetComments(t *testing.T) {
+	tests := []struct {
+		name            string
+		input           string
+		expectedDeps    []string
+		expectedComment string
+	}{
+		{
+			name: "double hash comment",
+			input: `build: main.o utils.o ## This is the comment
+	$(CC) -o $@ $^
+	`,
+			expectedDeps:    []string{"main.o", "utils.o"},
+			expectedComment: "This is the comment",
+		},
+		{
+			name:            "single hash comment with no space",
+			input:           `build: main.o utils.o  #This is a single hash comment`,
+			expectedDeps:    []string{"main.o", "utils.o"},
+			expectedComment: "This is a single hash comment",
+		},
+		{
+			name:            "comment content starts with hash",
+			input:           `build: main.o utils.o # #hashtag note`,
+			expectedDeps:    []string{"main.o", "utils.o"},
+			expectedComment: "#hashtag note",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := Parse(testURI, tt.input)
+			require.Len(t, m.Targets, 1)
+			tgt := m.Targets[0]
+			require.Len(t, tgt.Deps, len(tt.expectedDeps))
+			for i, dep := range tt.expectedDeps {
+				assert.Equal(t, dep, tgt.Deps[i].Name)
+			}
+			assert.Equal(t, tt.expectedComment, tgt.LineComment)
+		})
+	}
+}
+
 func TestParseTargetSpecificVar(t *testing.T) {
 	input := `build: CC = clang`
 	m := Parse(testURI, input)

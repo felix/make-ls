@@ -25,6 +25,7 @@ type Target struct {
 	DocComment    string
 	Range         lsp.Range
 	NameRange     lsp.Range
+	LineComment   string
 
 	// Pattern rule fields
 	IsPattern     bool
