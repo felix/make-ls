@@ -213,6 +213,20 @@ func TestParseOrderOnlyDeps(t *testing.T) {
 	assert.Equal(t, "builddir", tgt.OrderOnlyDeps[0].Name)
 }
 
+func TestParseTargetComments(t *testing.T) {
+	input := `build: main.o utils.o ## This is the comment
+	$(CC) -o $@ $^
+`
+	m := Parse(testURI, input)
+
+	require.Len(t, m.Targets, 1)
+	tgt := m.Targets[0]
+	require.Len(t, tgt.Deps, 2)
+	assert.Equal(t, "main.o", tgt.Deps[0].Name)
+	assert.Equal(t, "utils.o", tgt.Deps[1].Name)
+	assert.Equal(t, tgt.LineComment, "This is the comment")
+}
+
 func TestParseTargetSpecificVar(t *testing.T) {
 	input := `build: CC = clang`
 	m := Parse(testURI, input)
