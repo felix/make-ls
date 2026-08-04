@@ -340,7 +340,7 @@ func (p *parser) parseLine() {
 			NameRange:     nameRangeInSegment(startLine, line, trimmed, namesPart),
 		}
 		if hasComments {
-			t.LineComment = strings.TrimLeft(comments, "# ")
+			t.LineComment = strings.TrimSpace(strings.TrimLeft(comments, "#"))
 		}
 		p.targets = append(p.targets, t)
 		p.currentTarget = t
